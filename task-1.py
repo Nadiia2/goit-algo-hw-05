@@ -1,79 +1,50 @@
-import timeit
-import random
+class HashTable:
+    def __init__(self, size):
+        self.size = size
+        self.table = [[] for _ in range(self.size)]
 
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
+    def hash_function(self, key):
+        return hash(key) % self.size
 
-    mid = len(arr) // 2
-    left_half = arr[:mid]
-    right_half = arr[mid:]
+    def insert(self, key, value):
+        key_hash = self.hash_function(key)
+        key_value = [key, value]
 
-    return merge(merge_sort(left_half), merge_sort(right_half))
+        for pair in self.table[key_hash]:
+            if pair[0] == key:
+                pair[1] = value
+                return True
+        self.table[key_hash].append(key_value)
+        return True
 
-def merge(left, right):
-    merged = []
-    left_index = 0
-    right_index = 0
+    def get(self, key):
+        key_hash = self.hash_function(key)
+        if self.table[key_hash] is not None:
+            for pair in self.table[key_hash]:
+                if pair[0] == key:
+                    return pair[1]
+        return None
 
-    while left_index < len(left) and right_index < len(right):
-        if left[left_index] <= right[right_index]:
-            merged.append(left[left_index])
-            left_index += 1
-        else:
-            merged.append(right[right_index])
-            right_index += 1
+    def delete(self, key):
+        key_hash = self.hash_function(key)
+        if self.table[key_hash] is not None:
+            for i in range(len(self.table[key_hash])):
+                if self.table[key_hash][i][0] == key:
+                    self.table[key_hash].pop(i)
+                    return True
+        return False
 
-    while left_index < len(left):
-        merged.append(left[left_index])
-        left_index += 1
 
-    while right_index < len(right):
-        merged.append(right[right_index])
-        right_index += 1
+H = HashTable(5)
+H.insert("apple", 10)
+H.insert("orange", 20)
+H.insert("banana", 30)
 
-    return merged
+print(H.get("apple"))   # Виведе: 10
+print(H.get("orange"))  # Виведе: 20
+print(H.get("banana"))  # Виведе: 30
 
-def insertion_sort(lst):
-    for i in range(1, len(lst)):
-        key = lst[i]
-        j = i-1
-        while j >= 0 and key < lst[j]:
-            lst[j + 1] = lst[j]
-            j -= 1
-        lst[j + 1] = key
-
-def tim_sort(arr):
-    arr.sort()
-
-def main():
-    results = []
-    sizes = [1000, 10000, 100000]
-
-    for size in sizes:
-        data = [random.randint(0, 1000) for _ in range(size)]
-        
-        merge_time = timeit.timeit(
-            stmt='merge_sort(data)',
-            setup=f'data = {data}; from __main__ import merge_sort',
-            number=1
-        )
-        insertion_time = timeit.timeit(
-            stmt='insertion_sort(data)',
-            setup=f'data = {data}; from __main__ import insertion_sort',
-            number=1
-        )
-        tim_sort_time = timeit.timeit(
-            stmt='tim_sort(data)',
-            setup=f'data = {data}; from __main__ import tim_sort',
-            number=1
-        )
-
-        results.append((size, merge_time, insertion_time, tim_sort_time))
-
-    print("Size\tMerge Sort\tInsertion Sort\tTimsort")
-    for size, merge_time, insertion_time, tim_sort_time in results:
-        print(f"{size}\t{merge_time:.6f}\t{insertion_time:.6f}\t{tim_sort_time:.6f}")
-
-if __name__ == "__main__":
-    main()
+H.delete("apple")
+print(H.get("apple"))   # Виведе: None
+print(H.get("orange"))  # Виведе: 20
+print(H.get("banana"))  # Виведе: 30
